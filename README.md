@@ -75,3 +75,140 @@ If you'd like I can also:
 - Add a small `az cli` script to fetch the Cosmos DB Mongo connection string and patch the Function App app settings automatically.
 - Add a GitHub Actions workflow to build and deploy the frontend to the Static Web App and the Function App.
 
+## Running the Azure Function locally (Azure Functions Core Tools)
+
+If you want to run the backend Azure Function locally you need the Azure Functions Core Tools ("func") and a local Python environment. The project repository currently does not contain `host.json` or `local.settings.json` by default, so follow these steps to install the tooling, initialize the project folder, and run the Functions host locally.
+
+Summary (what you'll do):
+- Install Node.js and Azure Functions Core Tools (v4)
+- (Optional) install Azurite to emulate Azure Storage for local development
+- Create and activate a Python virtualenv and install Python deps
+- Create `host.json` and `local.settings.json` in `backend/function_app` (or run `func init`)
+- Start the Functions host with `func start`
+
+1) Install prerequisites (Linux / Debian/Ubuntu example)
+
+```bash
+# install Node.js (needed for func and Azurite)
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# install Azure Functions Core Tools v4
+sudo npm install -g azure-functions-core-tools@4 --unsafe-perm true
+
+# (optional) install Azurite (local Storage emulator)
+sudo npm install -g azurite
+
+# verify installs
+func --version
+node --version
+azurite --version || true
+```
+
+If you prefer a distribution-specific package or a package manager (Homebrew, apt repo for Microsoft packages), follow the official install guide for your OS and distribution.
+
+2) Prepare the Python environment and install backend dependencies
+
+```bash
+# from repo root
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+3) Prepare the Functions project folder
+
+The Functions host looks for `host.json` in the function app root. If `backend/function_app` does not contain these files, you can initialize the folder using the Core Tools (this will create `host.json`) or create the files manually.
+
+# Option A: let func create the project files (recommended if the folder is empty or not yet initialized)
+
+```bash
+cd backend/function_app
+func init --worker-runtime python --language python
+# create an HTTP-trigger function if you don't have one already (name it TodoFunction to match scaffold)
+func new --template "HTTP trigger" --name TodoFunction --authlevel "anonymous"
+```
+
+Note: `func init` will not overwrite existing function code files. If your repo already has code under `backend/function_app` (for example a `TodoFunction` subfolder), `func init` will create missing host files and leave your function code intact.
+
+# Option B: create minimal `host.json` and `local.settings.json` manually
+
+Create a minimal `host.json`:
+
+```bash
+cat > backend/function_app/host.json <<'JSON'
+{
+  "version": "2.0"
+}
+JSON
+```
+
+Create `local.settings.json` (DO NOT commit this file - it contains secrets):
+
+```bash
+cat > backend/function_app/local.settings.json <<'JSON'
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "COSMOS_MONGO_CONN": "<your-cosmos-mongo-connection-string-here>"
+  }
+}
+JSON
+```
+
+If you plan to use Azurite for storage emulation, start it in a separate terminal before starting the Functions host:
+
+```bash
+# run Azurite in background (example)
+azurite --silent --location /tmp/azurite_db --debug /tmp/azurite_debug.log &
+```
+
+4) Start the Functions host
+
+Activate the virtualenv (if not already active) and start the host from the function app folder:
+
+```bash
+cd backend
+source .venv/bin/activate
+cd function_app
+func start
+```
+
+If everything is configured correctly you should see the functions host start and bind to a localhost port (usually 7071). The HTTP-trigger endpoints will be listed in the host output. Your frontend can call these endpoints via the base URL `http://localhost:7071/api` (adjust Vite env if you use a different base path).
+
+5) Common issues & troubleshooting
+
+- "Unable to find project root. Expecting to find one of host.json, local.settings.json in project root." — Create `host.json` (see step 3) or run `func init` in `backend/function_app`.
+- "func: command not found" — Install Azure Functions Core Tools (`npm i -g azure-functions-core-tools@4`), or ensure `func` is in PATH.
+- Storage-related errors — Start Azurite or set a real Storage account connection string in `local.settings.json` (`AzureWebJobsStorage`).
+- Python worker errors — Make sure your virtualenv is active and `azure-functions` (and other deps) are installed in it. Activate venv before running `func start` so the Functions host uses the same Python environment.
+
+6) Wiring Cosmos DB connection string for local development
+
+- For local development, you can set `COSMOS_MONGO_CONN` in `local.settings.json` to point to a locally running Mongo-compatible instance if you have one, or to a Cosmos DB account in Azure.
+- To fetch the Cosmos DB connection string after you deploy the Cosmos account, use the Azure CLI (replace names):
+
+```bash
+az cosmosdb keys list --name <cosmosAccountName> --resource-group <rg> --type connection-strings
+```
+
+This returns connection strings you can safely copy into `local.settings.json` for testing. When you are ready to update the Function App in Azure, patch the app setting from the CLI instead of writing secrets into repo files:
+
+```bash
+az functionapp config appsettings set \
+  --name <functionAppName> \
+  --resource-group <rg> \
+  --settings COSMOS_MONGO_CONN="<primary-connection-string-here>"
+```
+
+Security note: never commit `local.settings.json` with production secrets. Add `backend/function_app/local.settings.json` to `.gitignore` if it's not already ignored.
+
+If you'd like, I can also:
+- Add a ready-made `host.json` and example `local.settings.json` to the repo (marked as examples, not tracked), or
+- Add a Makefile target that will initialize the Functions project and create example local settings (interactive, optional).
+Let me know which you prefer and I'll add it.
+
