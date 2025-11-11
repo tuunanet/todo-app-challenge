@@ -1,8 +1,28 @@
 # Azure full-stack app challenge: To-Do list
 
-This repository contains a scaffold for a classic To-Do web application.
+This repository contains a classic full-stack To-Do Web application made with React.
 
-Overview
+## Brief Reflection on the project
+
+Which AI tools you used and how:
+
+- I used Github Copilot in VSCode to both generate code and to diagnose and fix various errors
+
+Challenges you encountered and how you solved them:
+
+- Solved deployment and backend errors by discussing with Github Copilot
+
+What you'd improve with more time:
+
+- I would use this To-Do app codebase to refine the specification (generate sequence diagrams and API designs with AI) and then start over from scratch and be more conservative with generative AI usage for the next iteration. I would build more carefully and spend more time planning
+- CosmosDB free tier limits turned out to be too strict to be useful, so I would spend more time planning the infrastructure and testing in advance it fulfills the minimum needs for this challenge
+
+## Where to find the screen recording?
+
+I will share a Google drive by email for the final submission.
+
+## Overview
+
 - Backend: Monolithic Azure Function (HTTP trigger) that runs a Flask app. Connects to Azure Cosmos DB (MongoDB API) via a connection string provided with environment variables.
 - Frontend: React (hooks) app built for deployment as an Azure Static Web App.
 - Data: Cosmos DB (MongoDB API) stores To-Do items (id, title, timestamp, due_date, categories).
