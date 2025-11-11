@@ -19,7 +19,7 @@ What you'd improve with more time:
 
 ## Where to find the screen recording?
 
-I will share a Google drive by email for the final submission.
+I will share a Google drive link by email for the final submission.
 
 ## Overview
 
