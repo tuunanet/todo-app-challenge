@@ -1,0 +1,28 @@
+*{box-sizing:border-box;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif}
+body{margin:0;background:#f6f7fb;color:#1f2937}
+.container{max-width:900px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{margin:0}
+.subtitle{margin:0;color:#6b7280}
+main{margin-top:16px}
+.todo-form{background:#fff;padding:12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.todo-form .row{display:flex;gap:8px}
+.todo-form .row.small{margin-top:8px}
+.todo-form input{flex:1;padding:8px;border:1px solid #e5e7eb;border-radius:6px}
+.todo-form button{padding:8px 12px;background:#2563eb;color:white;border:none;border-radius:6px}
+.todo-list{list-style:none;padding:0;margin:12px 0}
+.todo-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fff;border-radius:8px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.todo-item .meta{display:flex;flex-direction:column}
+.todo-item .title{font-weight:600}
+.todo-item .timestamp{font-size:12px;color:#6b7280}
+.todo-item .actions button{background:#ef4444;color:white;border:none;padding:6px 10px;border-radius:6px}
+.empty{color:#6b7280}
+footer{margin-top:24px;color:#9ca3af}
+
+/* Responsive */
+@media (max-width:600px){
+  .container{padding:12px}
+  .todo-form .row{flex-direction:column}
+  .todo-item{flex-direction:column;align-items:flex-start}
+  .todo-item .actions{margin-top:8px;align-self:stretch;display:flex;justify-content:flex-end}
+}
