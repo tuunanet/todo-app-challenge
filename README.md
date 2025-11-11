@@ -1,4 +1,4 @@
-# To-Do Challenge — Fullstack Azure App
+# Azure full-stack app challenge: To-Do list
 
 This repository contains a scaffold for a classic To-Do web application.
 
@@ -6,16 +6,55 @@ Overview
 - Backend: Monolithic Azure Function (HTTP trigger) that runs a Flask app. Connects to Azure Cosmos DB (MongoDB API) via a connection string provided with environment variables.
 - Frontend: React (hooks) app built for deployment as an Azure Static Web App.
 - Data: Cosmos DB (MongoDB API) stores To-Do items (id, title, timestamp, due_date, categories).
-- Infra: Terraform configuration to provision Resource Group, Cosmos DB (MongoDB API), Function App, Storage Account, and Static Web App in `northeurope` (Europe North) using free-tier where applicable.
+- Infra: Azure infrastructure-as-code configuration (Bicep) to provision Resource Group, Cosmos DB (MongoDB API), Function App, Storage Account, and Static Web App. By default most resources are deployed to `northeurope` (North Europe) but the Static Web App is deployed to `westeurope` (West Europe) because that resource is not available in every region. You can override the target location via the Bicep `location` parameter in `infra/bicep/main.bicep`.
 
 Quick dev notes
 - Backend expects environment variable `COSMOS_MONGO_CONN` with a MongoDB connection string for Cosmos DB (Mongo API).
 - Frontend will call the backend at `/api` by default; set `VITE_API_BASE` for a different base URL.
 
+Quick start (Makefile)
+
+This repository includes a top-level `Makefile` to simplify local development. The Makefile creates and manages a Python virtualenv for the backend and runs the frontend dev server with Vite.
+
+- Install backend dependencies (creates `.venv` and installs requirements):
+
+```bash
+make install-backend
+```
+
+- Run the Flask backend locally (reads `backend/.env` if present to export environment variables such as `COSMOS_MONGO_CONN`):
+
+```bash
+make run-backend
+```
+
+- Alternatively, run the Azure Functions host locally (requires Azure Functions Core Tools `func`):
+
+```bash
+make run-backend-func
+```
+
+- Install and run the frontend dev server (Vite):
+
+```bash
+make run-frontend
+```
+
+Other useful Makefile targets:
+
+```bash
+make venv            # create virtualenv only
+make install-frontend
+make clean           # remove .venv
+make help            # show Makefile targets
+```
+
+If you need to fetch a Cosmos DB connection string into `backend/.env` the repo includes a helper script `scripts/fetch-cosmos-conn.sh` that calls the Azure CLI and writes the file for you (do not commit `backend/.env`).
+
 Contents
 - `backend/` — Azure Function + Flask app scaffold
 - `frontend/` — React app scaffold (Vite)
-- `infra/` — Terraform configuration for Azure resources
+- `infra/bicep/` — Bicep configuration for Azure resources
 
 Next steps
 1. Install backend dependencies (see `backend/requirements.txt`).
@@ -26,7 +65,7 @@ This scaffold focuses on clarity and extendability. Implementations are intentio
 
 ## Bicep (ARM) deployment
 
-This repository includes a Bicep conversion of the Terraform infra under `infra/bicep/`.
+This repository includes an Azure Bicep template under `infra/bicep/`.
 
 Notes before you deploy:
 - You need the Azure CLI installed and be logged in (`az login`).
@@ -44,11 +83,14 @@ If you want to suppress or avoid BCP081 warnings you can either:
 
 Example deploy steps (resource-group scope):
 
-1. Create the resource group (if you don't have one already):
+1. Create the resource group (if you don't have one already). The Bicep template's `location` parameter defaults to `northeurope` so create the RG there (or choose a location you prefer):
 
 ```bash
+# create the resource group for the main resources (default: northeurope)
 az group create --name rg-todoapp-dev --location northeurope
 ```
+
+Note: the Static Web App in the template is deployed to `westeurope` regardless of the resource group location because Static Web Apps are not available in all regions. If you want everything in a single region you can edit `infra/bicep/main.bicep` and change the `staticSite` location to a supported region for that resource.
 
 2. Validate and deploy the Bicep template into the resource group:
 
