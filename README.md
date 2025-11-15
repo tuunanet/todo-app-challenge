@@ -14,8 +14,8 @@ Challenges you encountered and how you solved them:
 
 What you'd improve with more time:
 
-- I would use this To-Do app codebase to refine the specification (generate sequence diagrams and API designs with AI) and then start over from scratch and be more conservative with generative AI usage for the next iteration. I would build more carefully and spend more time planning
-- CosmosDB free tier limits turned out to be too strict to be useful, so I would spend more time planning the infrastructure and testing in advance it fulfills the minimum needs for this challenge
+- I would use this To-Do app codebase to refine the specification (generate sequence diagrams and API designs with AI) and then start over from scratch and be more conservative with generative AI usage for the next iteration. I would manually create a similar directory structure and scaffold backend with `func` command, and frontend with Vite and make sure these templates work locally and in the cloud. Then I could copy anything that worked from the original Copilot code into this second iteration (Flask API endpoints, react components).
+- CosmosDB free tier limits turned out to be too strict to be useful, so I would spend more time planning the infrastructure and testing in advance it fulfills the minimum needs for this challenge. Azure serverless SQL seems like a better free option for this hackathlon.
 
 ## Where to find the screen recording?
 
